@@ -1,0 +1,100 @@
+﻿@page "/neue-buchung"
+
+@inject KassenDbContext dbContext
+@inject NavigationManager Navigation
+
+@rendermode InteractiveServer
+
+<h3>Neue Buchung anlegen</h3>
+
+@if (konten is null)
+{
+    <p>Lade Konten...</p>
+}
+else
+{
+    <form Model="@neueBuchung" onsubmit="Speichern" @formname="NeueBuchungForm">
+        @* <DataAnnotationsValidator/> *@
+        <div class="d-flex align-items-end gap-2 mb-3">
+            <!--Kontoart-->
+            <div>
+                <label for="konto">Kontoart:</label>
+                <select id="konto" class="form-control" @bind="neueBuchung.KontoId">
+                    <option disabled selected>Bitte wählen...</option>
+                    @foreach (var konto in konten)
+                    {
+                        <option value="@konto.Id">@konto.KontoName</option>
+                    }
+                </select>
+            </div>
+
+            <!--Einnahmen oder Ausgaben-->
+            <div>
+                <label for="Buchungsart">Buchungsart: </label>
+                <select id="art" class="form-control" @bind="neueBuchung.Buchungsart">
+                    <option value="@Buchungsart.Einnahme">Einnahme</option>
+                    <option value="@Buchungsart.Ausgabe">Ausgabe</option>
+                </select>
+            </div>
+        </div>
+        <!--Verwendungszweck-->
+        <div class="mb-3">
+            <label for="zweck">Verwendungszweck:</label>
+            <input type="text" id="zweck" class="form-control" @bind="neueBuchung.Verwendungszweck" required />
+        </div>
+        <div class="d-flex align-items-end gap-2 mb-3">
+            <div class="mb-3">
+                <label for="betrag">Betrag in €:</label>
+                <input type="number" id="betrag" class="form-control" @bind="neueBuchung.Betrag" step="0.01" required />
+            </div>
+
+            <!--Datum-->
+            <div class="mb-3">
+                <label for="datum">Buchungsdatum:</label>
+                <input type="date" id="datum" class="form-control" @bind="neueBuchung.Datum" required />
+            </div>
+        </div>
+        <!--Speichern und Abbrechen-->
+        <button type="submit" class="btn btn-success" @onclick="Speichern">💾 Speichern</button>
+        <button type="button" class="btn btn-secondary" @onclick="Abbrechen">❌ Abbrechen</button>
+    </form>
+}
+
+@code {
+    private Buchung neueBuchung = new() { Datum = DateTime.Today };
+    private List<Konto> konten;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Konten aus der Datenbank laden
+        konten = await dbContext.Konten.ToListAsync();
+    }
+
+    private async Task Speichern()
+    {
+        await dbContext.Buchungen.AddAsync(neueBuchung);
+
+        var konto = await dbContext.Konten.FindAsync(neueBuchung.KontoId);
+        if (konto != null)
+        {
+            if (neueBuchung.Buchungsart == Buchungsart.Einnahme)
+                konto.Saldo += neueBuchung.Betrag;
+            else
+                konto.Saldo -= neueBuchung.Betrag;
+
+            dbContext.Konten.Update(konto);
+        }
+
+        await dbContext.SaveChangesAsync();
+        Navigation.NavigateTo("/buchungen", forceLoad: true);
+
+    }
+
+
+    private void Abbrechen()
+    {
+        Navigation.NavigateTo("/buchungen", forceLoad: true);
+    }
+}

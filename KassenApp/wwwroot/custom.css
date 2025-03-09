@@ -1,0 +1,119 @@
+﻿body {
+    font-family: 'Aptos', sans-serif;
+    background-color: #f5f5f5;
+    color: #002D72;
+    padding: 10px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1, h2, h3 {
+    margin-bottom: 8px;
+    font-size: 1.5rem;
+    color: #002D72;
+    font-weight: 600 /*Stärkere Überschriften */
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .table th, .table td {
+        border: 1px solid #ddd;
+        padding: 4px 6px;
+        text-align: left;
+        font-size: 13px;
+    }
+
+    .table th {
+        background-color: #002D72;
+        color: #fff;
+    }
+
+    .table td {
+        background-color: #fff;
+        color: #002D72;
+        padding: 4px 8px;
+    }
+
+tfoot {
+    background-color: #eaeaea; /* Heller Grauton für bessere Lesbarkeit */
+    font-weight: bold;
+}
+
+    tfoot td {
+        border-top: 2px solid #002D72; /* Dunkelblauer Trennstrich */
+        padding-top: 6px;
+    }
+
+.text-end {
+    text-align: right;
+}
+
+.btn {
+    color: #fff;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+    .btn:hover {
+        background-color: #e65c00;
+        filter: brightness(90%);
+    }
+
+.btn-success {
+    background-color: #4caf50;
+    color: #fff;
+}
+
+.btn-secondary {
+    background-color: #002D72; /* Dunkelblau als Alternative */
+    color: #fff;
+}
+
+    .btn-secondary:hover {
+        background-color: #001f4e; /* Noch dunkleres Blau als Hover */
+    }
+
+.form-control {
+    width: 100%;
+    padding: 4px 8px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: none;
+}
+
+.mb-3 {
+    margin-bottom: 12px
+}
+
+.navbar {
+    background-color: #002D72;
+    color: #fff;
+    padding: 8px 15px;
+    border-bottom: 3px solid #FF6600;
+}
+
+    .navbar a {
+        color: #ddd;
+        text-decoration: none;
+        padding: 6px 12px;
+        transition: color 0.3s;
+    }
+
+        .navbar a:hover {
+            background-color: #FF6600; /* Orange als Hover-Effekt */
+            color: #fff;
+        }
+
+    .navbar .active {
+        background-color: #FF6600;
+        color: #fff;
+        font-weight: bold;
+    }

@@ -1,0 +1,143 @@
+﻿@page "/"
+@page "/buchungen"
+
+
+@inject KassenDbContext dbContext
+@inject NavigationManager Navigation
+
+
+@using Microsoft.EntityFrameworkCore
+@using System.Text
+
+@rendermode InteractiveServer
+<h3>Buchungsübersicht</h3>
+
+
+<!--Filter: Datumsauswahl-->
+<div class="d-flex align-items-end gap-2 mb-3">
+    <div>
+        <label for="datumVon">Von:</label>
+        <input type="date" id="datumVon" @bind="datumVon" class="form-control" />
+    </div>
+
+    <div>
+        <label for="datumBis">Bis:</label>
+        <input type="date" id="datumBis" @bind="datumBis" class="form-control" />
+    </div>
+    <button class="btn btn-primary mt-2" @onclick="LadeBuchungen">Filtern</button>
+</div>
+<hr />
+<!-- Buchungsliste-->
+@if (buchungen is null)
+{
+    <p>Lade Daten...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Konto</th>
+                <th>Art</th>
+                <th>Verwendungszweck</th>
+                <th>Betrag</th>
+                <th>Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var buchung in buchungen)
+            {
+                <tr>
+                    <td>@buchung.Datum.ToShortDateString()</td>
+                    <td>@buchung.Konto.KontoName</td>
+                    <td>@buchung.Buchungsart</td>
+                    <td>@buchung.Verwendungszweck</td>
+                    <td class="text-end">@buchung.Betrag.ToString("N2") €</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" @onclick="() => Bearbeiten(buchung.Id)">✏ Bearbeiten</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => Loeschen(buchung.Id)">🗑 Löschen</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-end"><strong>Gesamtsaldo:</strong></td>
+                <td><strong>@buchungen.Sum(buch => buch.Betrag).ToString("N2") €</strong></td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+}
+<!--Button zum Anlegen einer neuen Buchung-->
+<button class="btn btn-primary" href="/api/download" @onclick="Exportieren">📤 Exportieren</button>
+
+
+
+@code {
+    private List<Buchung> buchungen;
+    private DateTime? datumVon = new DateTime(DateTime.Today.Year, 1, 1); // 01.01. des aktuellen Jahres
+    private DateTime? datumBis = DateTime.Today; // heute
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LadeBuchungen();
+    }
+
+    private async Task LadeBuchungen()
+    {
+        var query = dbContext.Buchungen.Include(b => b.Konto).AsQueryable();
+
+        if (datumVon.HasValue)
+            query = query.Where(b => b.Datum >= datumVon.Value);
+
+        if (datumBis.HasValue)
+            query = query.Where(b => b.Datum <= datumBis.Value);
+
+        query = query.OrderByDescending(b => b.Datum);
+
+        buchungen = await query.Take(10).ToListAsync();
+    }
+
+    private void Bearbeiten(int id)
+    {
+        Console.WriteLine($"DEBUG: Bearbeiten aufgerufen mit ID {id}");
+        Navigation.NavigateTo($"/buchung-bearbeiten/{id}");
+    }
+
+    private async Task Loeschen(int id)
+    {
+        var buchung = await dbContext.Buchungen.FindAsync(id);
+        if (buchung != null)
+        {
+            dbContext.Buchungen.Remove(buchung);
+            await dbContext.SaveChangesAsync();
+            await LadeBuchungen();
+        }
+    }
+
+    private async Task Exportieren()
+    {
+        Console.WriteLine("wir exportieren was...");
+        // var buchungsDaten = buchungen.Select(buch => new
+        // {
+        //     Datum = buch.Datum.ToShortDateString(),
+        //     buchKonto = buch.Konto.KontoName,
+        //     Buchungsart = buch.Buchungsart.ToString(),
+        //     Verwendungszweck = buch.Verwendungszweck,
+        //     Betrag = buch.Betrag.ToString("N2")
+        // }).ToList();
+
+        // var csvData = new StringBuilder();
+        // csvData.AppendLine($"Datum;Konto;Buchungsart;Verwendungszweck;Betrag");
+
+        // foreach (var buchung in buchungsDaten)
+        // {
+        //     csvData.AppendLine($"{buchung.Datum};{buchung.buchKonto};{buchung.Buchungsart};{buchung.Verwendungszweck};{buchung.Betrag}");
+
+        //     var filename = $"Buchungsübersicht_{DateTime.Now:yyyy-MM-dd}.csv";
+        //     await JSRuntime.InvokeVoidAsync("downloadFile", filename, csvData.ToString());
+        // }
+    }
+}
