@@ -71,7 +71,13 @@ else
     </table>
 }
 <!--Button zum Anlegen einer neuen Buchung-->
-<button class="btn btn-primary" href="/api/download" @onclick="Exportieren">📤 Exportieren</button>
+
+<div class="mb-3">
+    <label for="jahr">Jahr wählen:</label>
+    <input type="number" id="jahr" @bind="jahr" class="form-control" min="2000" max="2099" />
+    <button class="btn btn-primary mt-2" @onclick="Exportieren">📥 Exportieren</button>
+</div>
+
 
 
 
@@ -79,6 +85,7 @@ else
     private List<Buchung> buchungen;
     private DateTime? datumVon = new DateTime(DateTime.Today.Year, 1, 1); // 01.01. des aktuellen Jahres
     private DateTime? datumBis = DateTime.Today; // heute
+    private int? jahr = DateTime.Now.Year - 1; // Standard: Vorjahr
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,7 +126,8 @@ else
 
     private async Task Exportieren()
     {
-        Console.WriteLine("wir exportieren was...");
+
+        Navigation.NavigateTo("/api/excel-export/export-buchungen", forceLoad: true);
         // var buchungsDaten = buchungen.Select(buch => new
         // {
         //     Datum = buch.Datum.ToShortDateString(),

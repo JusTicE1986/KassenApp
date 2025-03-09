@@ -1,6 +1,7 @@
 using KassenApp.Components;
 using KassenApp.Data;
 using KassenApp.Models;
+using KassenApp.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace KassenApp;
@@ -19,8 +20,17 @@ public class Program
         // Add services to the container.
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
+        
+        //ExportController hinzufügen
+        builder.Services.AddScoped<ExcelExportService>();
+        builder.Services.AddControllers();
+
 
         var app = builder.Build();
+
+
+        app.MapControllers();
+
 
         //Initial Konten einfügen
         using (var scope = app.Services.CreateScope())
